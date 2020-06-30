@@ -119,7 +119,7 @@ class CustomerEloquentRepository extends EloquentRepository implements CustomerR
                 }
             }
         }
-        
+
         return $query
             ->get([
                 'customers.*', 'accounts.name as in_charge_cast',
@@ -257,7 +257,7 @@ class CustomerEloquentRepository extends EloquentRepository implements CustomerR
             foreach ($sortList as $sortItem) {
                 $sortInfo = explode("-", $sortItem);
                 if ($sortInfo[0] != 'bottle_name') {
-                  
+
                     $query->orderBy($sortInfo[0], $sortInfo[1]);
                 }
             }
@@ -422,83 +422,6 @@ class CustomerEloquentRepository extends EloquentRepository implements CustomerR
         return $query->orderBy('customers.name', 'desc')->get();
     }
 
-    public function separateCsvToCustomersAndKeepBottles($data, $request)
-    {
-        $customerData = [];
-        $keepBottleData = [];
-        DB::beginTransaction();
-        foreach ($data as $index => $customer) {
-            $customerData[$index] = array(
-                'name' => $customer[0],
-                'furigana_name' => $customer[1],
-                'date_of_birth' => $customer[2],
-                'email' => $customer[3],
-                'phone_number' => $customer[4],
-                'day_of_week_can_be_contact' => $customer[5],
-                'company_name' => $customer[10],
-                'department' => $customer[11],
-                'position' => $customer[12],
-                'job' => $customer[13],
-                'post_no' => $customer[14],
-                'province' => $customer[15],
-                'district' => $customer[16],
-                'address' => $customer[17],
-                'company_tower' => $customer[18],
-                'note' => $customer[19],
-                'bar_id' => $request->bar_id
-            );
-            $bottle = Bottle::where('name', trim($customer[7]))->first();
-            if (!empty($customer[7]) && is_null($bottle)) {
-                throw new NotFoundHttpException(trans('error.bottle.not_found') . trans('validation.specific_in_line') . ($index + 2) . trans('validation.specific_in_column') . "8");
-            }
-            $cast = User::select('accounts.*')
-                ->leftJoin('bar_memberships', 'accounts.id', '=', 'bar_memberships.account_id')
-                ->where('bar_memberships.role', UserRole::Cast)
-                ->where('accounts.name', trim($customer[6]))
-                ->first();
-            if (!empty($customer[6]) && is_null($cast)) {
-                throw new NotFoundHttpException(trans('error.cast.not_found') .  trans('validation.specific_in_line') . ($index + 2) . trans('validation.specific_in_column') . '7');
-            }
-            $validatorCsv = Validator::make($customerData[$index], [
-                'name' => 'bail|required|filled|max:255',
-                "furigana_name" => 'bail|required|filled|max:255|regex:/^[ぁ-んァ-ン]+$/',
-                "company_name" => 'max:255',
-                "date_of_birth" => 'date_multi_format:"Y/m/d","Y-m-d"date_multi_format:"Y/m/d","Y-m-d"',
-                "email" => 'email',
-                "post_no" => 'regex:/^\d{3}[-]\d{4}/i',
-            ]);
-            if ($validatorCsv->fails()) {
-                throw new ValidationException($validatorCsv->errors()->first() . trans('validation.specific_in_line') . ($index + 2));
-            }
-            if (!empty($customer[6])) {
-                array_merge($customerData[$index], ['in_charge_cast_id' => $cast->id]);
-            }
-            if (empty($customer[2])) {
-                $customerData[$index]['date_of_birth'] = null;
-            }
-            if (empty($customer[14])) {
-                $customerData[$index]['post_no'] = null;
-            }
-            if (!empty($customer[7])) {
-                $keepBottleData[$index] = array(
-                    'bottle_id' => $bottle->id,
-                    'remain' =>  $customer[8],
-                    'created_at' => $customer[9],
-                    'price' => 0,
-                    'bar_id' => $request->bar_id
-                );
-                $validator = Validator::make($keepBottleData[$index], [
-                    "remain" => 'bail|required|numeric',
-                    "created_at" => 'bail|required|date_multi_format:"Y/m/d","Y-m-d"date_multi_format:"Y/m/d","Y-m-d"',
-                ]);
-                if ($validator->fails()) {
-                    throw new ValidationException($validator->errors()->first() . trans('validation.specific_in_line')  . ($index + 2));
-                }
-            }
-        };
-        DB::commit();
-        return ['customers' => $customerData, 'keepBottles' => $keepBottleData];
-    }
     public function findKeepBottleByCustomer($customerId)
     {
         $keepBottleInfos = DB::table('customers')
@@ -571,7 +494,7 @@ class CustomerEloquentRepository extends EloquentRepository implements CustomerR
     }
 
     /**
-     * remove or restore customers: 
+     * remove or restore customers:
      * update is_trash to all customers in ids list
      * @param ids array
      * @param isTrash: 1-remove, 0-not remove

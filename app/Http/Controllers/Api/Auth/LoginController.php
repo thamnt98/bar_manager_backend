@@ -38,7 +38,6 @@ class LoginController extends BaseController
                 $token->expires_at = Carbon::now()->addDays(30);
             $token->save();
             $tokenResult->user = $user;
-
             return $this->sendResponse(new LoginSuccess($tokenResult), trans("auth.login.success"), Response::HTTP_OK);
         } else {
             return $this->sendError(trans("auth.login.failed"), array('password' => [trans('auth.failed')]), Response::HTTP_BAD_REQUEST);

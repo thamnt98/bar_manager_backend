@@ -49,7 +49,7 @@ Route::group(['middleware' => array('auth:api', 'verified')], function()
 
     Route::get('customerdata','CustomerController@getCustomerData');
     Route::patch('customerdata/remove-restore','CustomerController@updateCustomerData');
-    
+
     Route::get('bars','BarController@getListBar');
     Route::get('dropdown/bars','BarController@getDropDownBars');
     Route::get('bars/{barId}','BarController@getDetailBar');
@@ -77,7 +77,6 @@ Route::group(['middleware' => array('auth:api', 'verified')], function()
     Route::get('casts/{castId}','CastController@detail');
     Route::patch('casts/{castId}','CastController@update');
     Route::delete('casts/{castId}','CastController@delete');
-    Route::post('customers/importCsv', 'CustomerController@importCSVCustomers');
     Route::get('bars/{barId}/staffs', 'StaffController@getListStaffByBarId');
     Route::post('customers/{customerId}/uploadAvatar', 'CustomerController@uploadAvatar');
     Route::get('bars/{barId}/customers/statistic-birthday','CustomerController@getBirthdayCustomerStatisticByBar');

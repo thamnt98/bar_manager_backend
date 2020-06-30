@@ -21,7 +21,6 @@ class LoginSuccess extends JsonResource
         $userData['email'] = $this->user->email;
         $userData['role'] = $this->user->role();
         $userData['verified'] = $this->user->hasVerifiedEmail();
-        $userData['account_limit_plan'] = $this->user->accountLimitPlan->type;
         $userData['is_admin'] = $this->user->is_admin;
         $userData['bar_ids'] = $barIds;
         return [

@@ -142,7 +142,7 @@ class CustomerController extends BaseController
      * @author HoangNN
      */
     public function getCustomerData(Request $request)
-    { 
+    {
         $user = Auth::user();
         $barIds = null;
         $role = $this->getRole();
@@ -187,7 +187,7 @@ class CustomerController extends BaseController
                     $customers = $this->sortCustomerListByBottleName($customers, $sortInfo[1]);
                 }
             }
-        } 
+        }
         $customers = array_values($customers->toArray());
         return $this->sendResponse($customers, trans("api.list.success"), Response::HTTP_OK);
     }
@@ -284,7 +284,7 @@ class CustomerController extends BaseController
      */
     public function updateCustomerData(Request $request)
     {
-        $user = Auth::user();    
+        $user = Auth::user();
         $role = $this->getRole();
         switch ($role) {
             case UserRole::Staff:
@@ -301,9 +301,9 @@ class CustomerController extends BaseController
         $input = $request->all();
         $ids = explode(',', $input['ids']);
         $is_trash = $input['is_trash'] == '1' ? true : false;
-  
+
         $countRemoved = $this->customerRepository->updateCustomerData($ids, $is_trash);
-        
+
         return $this->sendResponse($countRemoved, $is_trash ? trans("api.delete.success") : trans("api.restore.success"), Response::HTTP_OK);
     }
 
@@ -437,51 +437,6 @@ class CustomerController extends BaseController
         return false;
     }
 
-    public function importCSVCustomers(Request $request)
-    {
-        $user = Auth::user();
-        $role = $this->getRole();
-        $validator = Validator::make($request->all(), [
-            'csv_file'  => 'required|mimes:csv,txt',
-            'bar_id' => 'required',
-        ]);
-        $validator->after(function ($validator) use ($request, $user, $role) {
-            if (empty($this->userRepository->findBarByUserAndBarId($user, $request->input('bar_id'))) && $role != UserRole::Admin) {
-                $validator->addFailure('bar_id', 'not_found');
-            }
-        });
-        if ($validator->fails()) {
-            return $this->sendError($validator->errors()->first(), trans("validation.validation_error"), Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-        $path = $request->file('csv_file')->getRealPath();
-        $data = array_map('str_getcsv', file($path));
-        array_shift($data);
-        if (empty($data)) {
-            return $this->sendError(trans("api.csv.import.empty"), [], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-        try {
-            $data = $this->customerRepository->separateCsvToCustomersAndKeepBottles($data, $request);
-            $customerData = $data['customers'];
-            $keepBottleData = $data['keepBottles'];
-            Customer::insert($customerData);
-            $count = count($customerData);
-            $customerIds = Customer::orderBy('id', 'desc')->take($count)->pluck('id')->toArray();
-            foreach ($keepBottleData as $index => &$keepBottle) {
-                $keepBottle['customer_id'] = $customerIds[$count - 1 - $index];
-            }
-            KeepBottle::insert($keepBottleData);
-            return $this->sendResponse([], trans("api.csv.import.success"), Response::HTTP_OK);
-        } catch (NotFoundHttpException $e) {
-            DB::rollback();
-            return $this->sendError($e->getMessage(), trans("api.csv.import.fail"), Response::HTTP_NOT_FOUND);
-        } catch (ValidationException $e) {
-            DB::rollback();
-            return $this->sendError($e->validator, trans("api.csv.import.fail"), Response::HTTP_BAD_REQUEST);
-        } catch (\Exception $e) {
-            DB::rollback();
-            return $this->sendError($e->getMessage(), trans("api.csv.import.fail"), Response::HTTP_BAD_REQUEST);
-        }
-     }
     public function listKeepBottle(Request $request, int $customerId)
     {
         $user = Auth::user();
@@ -509,13 +464,6 @@ class CustomerController extends BaseController
     {
         $user = Auth::user();
         $role = $this->getRole();
-        switch ($role) {
-            case  UserRole::Staff :
-                throw new AccessDeniedHttpException(trans('error.access_denied'));
-                break;
-            default:
-                break;
-        }
         $inputKeepBottleList = $request->all()['data'];
         $errorList = array();
         foreach($inputKeepBottleList as $key => $keepBottle) {
@@ -611,7 +559,7 @@ class CustomerController extends BaseController
             throw new MethodNotAllowedHttpException([], 'Forbidden');
         }
         $validator = Validator::make($request->all(), [
-            "icon" => 'required|image|mimes:png,jpg,jpeg|max:5120',     
+            "icon" => 'required|image|mimes:png,jpg,jpeg|max:5120',
         ]);
         if ($validator->fails()) {
             return $this->sendError(trans("validation.validation_error"), $validator->errors(), Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -657,8 +605,8 @@ class CustomerController extends BaseController
         ]), trans("api.report.success"), Response::HTTP_OK);
     }
 
-    /** 
-     * Get statistic of customer by keep bottle and bar 
+    /**
+     * Get statistic of customer by keep bottle and bar
      * @param barId, request:month
      * @author ThamNT
      */
@@ -691,8 +639,8 @@ class CustomerController extends BaseController
         return $this->sendResponse(['month' => $month, 'keep_bottles' => $keepBottles], trans("api.report.success"), Response::HTTP_OK);
     }
 
-     /** 
-     * Get statistic revenue of customer by bar 
+     /**
+     * Get statistic revenue of customer by bar
      * @param barId, request:month,limit
      * @author ThamNT
      */
@@ -724,9 +672,9 @@ class CustomerController extends BaseController
         $revenue = $this->customerRepository->getRevenueCustomerByBarId($barId, $month, $limit);
         return $this->sendResponse(['month' => $month, 'revenue' => $revenue], trans("api.report.success"), Response::HTTP_OK);
     }
-    
-     /** 
-     * Get statistic counting visit of customer by bar 
+
+     /**
+     * Get statistic counting visit of customer by bar
      * @param barId, request:month,limit
      * @author ThamNT
      */
@@ -759,8 +707,8 @@ class CustomerController extends BaseController
         return $this->sendResponse(['month' => $month, 'visit_count' => $visitCount], trans("api.report.success"), Response::HTTP_OK);
     }
 
-     /** 
-     * Get statistic counting type honshimei of customer by bar 
+     /**
+     * Get statistic counting type honshimei of customer by bar
      * @param barId, request:month,limit
      * @author ThamNT
      */

@@ -65,10 +65,10 @@ class RegisterController extends BaseController
         if ($validator->fails()) {
             return $this->sendError(trans("validation.validation_error"), $validator->errors(), Response::HTTP_UNPROCESSABLE_ENTITY);
         }
-        $registeredMail = $this->registerMailRepository->createOrUpdate($request->email); 
+        $registeredMail = $this->registerMailRepository->createOrUpdate($request->email);
         if ($registeredMail) {
             try{
-            $registeredMail->notify(new RegisterRequest); 
+            $registeredMail->notify(new RegisterRequest);
             }
             catch(Exception $e)
             {
@@ -99,9 +99,10 @@ class RegisterController extends BaseController
             'email' => 'bail|required|email|max:255|unique:accounts',
             'password' => 'bail|required|string|min:4|max:25|pwd_not_special_character',
             'generated_code' => 'required|max:255',
-            'bar_name' => 'required',
-            'tel' => 'required|max:14'
-        ]); 
+            'bar_name' => 'required|unique:bars,name',
+            'tel' => 'required|max:14',
+            'address'  => 'bail|required|max:255',
+        ]);
         if ($validator->fails()) {
             return $this->sendError(trans("validation.validation_error"), $validator->errors(), Response::HTTP_UNPROCESSABLE_ENTITY);
         }
@@ -119,7 +120,6 @@ class RegisterController extends BaseController
         if ($validator->fails()) {
             return $this->sendError(trans("validation.validation_error"), $validator->errors(), Response::HTTP_UNPROCESSABLE_ENTITY);
         }
-        
         $input = $request->all();
         $input['address'] = $request['address'];
         $input['limit_plan_id'] = 1;
@@ -142,7 +142,7 @@ class RegisterController extends BaseController
     {
         try {
             $input = $request->all();
-            
+
             $params = [
                 'card' => [
                     "number" => $input['card_number'],
@@ -151,7 +151,7 @@ class RegisterController extends BaseController
                 ]
             ];
             $token = $this->customerService->getTokenPayJP($params);
-            
+
             return $this->sendResponse(['token' => $token->id], trans("auth.register.success"), Response::HTTP_OK);
         } catch (\Exception $e) {
             throw $e;

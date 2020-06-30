@@ -98,7 +98,7 @@ class BarController extends BaseController
 
     /**
      * Get list bar by user login
-     * 
+     *
      * @author ThamNT
      */
     public function getListBarByUserLogin()
@@ -152,8 +152,9 @@ class BarController extends BaseController
                 throw new AccessDeniedHttpException(trans('error.access_denied'));
         }
         $validator = Validator::make($request->all(), [
-            'name'  => 'bail|required|max:255|unique:accounts',
-            'tel' => 'required|max:14'
+            'name'  => 'bail|required|max:255|unique:bars',
+            'tel' => 'required|max:14',
+            'address'  => 'bail|required|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -200,8 +201,9 @@ class BarController extends BaseController
                 throw new AccessDeniedHttpException(trans('error.access_denied'));
         }
         $validator = Validator::make($request->all(), [
-            'name' => 'bail|required|max:255|unique:accounts',
-            'tel' => 'required|max:14'
+            'name' => 'bail|required|max:255|unique:bars,name,'.$barId,
+            'tel' => 'required|max:14',
+            'address'  => 'bail|required|max:255',
         ]);
 
         if ($validator->fails()) {

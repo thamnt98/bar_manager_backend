@@ -11,7 +11,7 @@ namespace App\Repositories\Customer;
 
 interface CustomerRepository
 {
-    
+
     /**
      * find customer by list barId
      * @param $barIds
@@ -28,7 +28,7 @@ interface CustomerRepository
                                             $mustLessDateOfBirth,
                                             $orderFieldName,
                                             $orderBy,
-                                            $sort, 
+                                            $sort,
                                             $removeFlag);
 
     /**
@@ -75,14 +75,13 @@ interface CustomerRepository
      * @return mixed
      */
     public function findCustomerByBarIds($barIds, $name);
-    public function separateCsvToCustomersAndKeepBottles($data,$request);
     public function findKeepBottleByCustomer($customerId);
     public function findKeepBottleCanEditByBarId($barIds,$customerId);
     public function modifyKeepBottleList($inputKeepBottleList,$customerId);
 
 
     /**
-     * remove or restore customers: 
+     * remove or restore customers:
      * update is_trash to all customers in ids list
      * @param ids array
      * @param is_trash: 1-remove, 0-not remove
@@ -98,7 +97,7 @@ interface CustomerRepository
     public function statisticBirthdayCustomerByBarAndMonth($barId, $month);
 
     /**
-     * Get list of customer by bar has birthday is today 
+     * Get list of customer by bar has birthday is today
      * @param $now
      * @author ThamNT
      */
